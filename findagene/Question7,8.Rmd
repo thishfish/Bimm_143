@@ -1,0 +1,47 @@
+---
+title: "Question7,8"
+author: "Thisha Thiagarajan A15474979"
+date: "12/2/2021"
+output: html_document
+---
+Read in the fasta formatted alignment. 
+```{r}
+library(bio3d)
+alignment <- read.fasta("sample.fasta", rm.dup = TRUE, to.upper = FALSE, to.dash=TRUE)
+```
+
+Calculate the sequence identity matrix
+
+```{r}
+heatmap_data <- seqidentity(alignment, normalize=TRUE, similarity=FALSE, ncore=1, nseg.scale=1)
+```
+
+Create heatmap plot 
+
+```{r}
+heatmap(heatmap_data, margins =c(12,12))
+```
+Generate a consensus sequence from your alignment
+
+```{r}
+consensus(alignment)
+```
+Consensus alignment has a lot of gaps. I will use an original sequence from the alignment for my search of the PDB. I chose the sequence with the highest identity to all others in your alignment by calculating the row-wise maximum from my sequence identity matrix.
+
+```{r}
+apply(heatmap_data[1:10,], 1, sum)
+```
+
+Using this analysis, I will use the sequence from HomoSapien_APOEQuery. 
+
+```{r}
+pdb <- read.pdb("6V7M")
+blast <- blast.pdb(pdbseq(pdb) )
+
+```
+
+```{r}
+blast
+# 
+```
+

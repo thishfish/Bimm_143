@@ -1,0 +1,87 @@
+---
+title: "class11"
+output: 
+    pdf_document: default
+---
+
+# PDB Statistics 
+
+```{r}
+db <-  read.csv("Data Export Summary.csv", row.names =1)
+head(db)
+```
+
+
+> **Q1: What percentage of structures in the PDB are solved by X-Ray and Electron Microscopy.**
+
+percentage of structures solved by X-ray: 87.6%
+percentage of structures solved by EM: 4.9%
+
+```{r}
+X.ray <- sum(db$X.ray)
+EM <- sum(db$EM)
+total <-sum(db$Total)
+X.ray/total *100
+EM/total *100
+
+#more efficient method
+
+method.sums <- colSums(db)
+round((method.sums/method.sums["Total"] *100), 2)
+
+```
+
+
+> **Q2: What proportion of structures in the PDB are protein?**
+
+87.36%
+
+```{r}
+round((db$Total/method.sums["Total"]) *100, 2)
+```
+
+
+> **Q3: Type HIV in the PDB website search box on the home page and determine how many HIV-1 protease structures are in the current PDB?**
+
+When searching Human immunodeficiency virus 1, we get 1828 on the PDB website. 
+
+# Visualizing the HIV-1 protease structure
+
+Displayed all water molecules as red spheres. We can change sphere size by changing the bond radius. 
+
+![](vmdscene.png)
+
+> **Q4: Water molecules normally have 3 atoms. Why do we see just one atom per water molecule in this structure?**
+
+The Hydrogen atom is the smallest atom. Thus, we are unable to see it in the water molecule render, instead we are only able to see the Oxygen molecule for each H2O molecule in the render. 
+
+> **Q5: There is a conserved water molecule in the binding site. Can you identify this water molecule? What residue number does this water molecule have (see note below)?**
+
+It is residue 308. Using the mouse label tool, I was able to determine this. 
+
+> **Q6. As you have hopefully observed HIV protease is a homodimer (i.e. it is composed of two identical chains). With the aid of the graphic display and the sequence viewer extension can you identify secondary structure elements that are likely to only form in the dimer rather than the monomer?**
+
+Professor said we can skip this question in class. When using the sequence viewer, the possible structure elements mentioned are 	Turn, Extended conformation (B-sheets), Isolated bridge, Alpha helix, 3–10 helix, Pi helix, and Coil. Looking at this, it seems like Turn and Extended conformation (B sheets) are likely to form in the dimer. 
+
+# Use Bio3D
+
+```{r}
+library(bio3d)
+
+pdb <- read.pdb("1hsg.pdb")
+pdb
+
+#extract sequence
+pdbseq(pdb)
+
+#get protein seq 
+aa123(pdbseq(pdb))
+```
+
+Let's plot B-factor
+
+```{r}
+plot.bio3d(pdb$atom$b, sse = pdb)
+```
+
+

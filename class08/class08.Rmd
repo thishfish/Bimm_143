@@ -1,0 +1,338 @@
+---
+title: "MachineLearning1"
+author: "Thisha Thiagarajan A15474979"
+date: "10/21/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+First up is clustering methods
+
+# Kmeans Clustering
+
+The function in base R to do Kmeans clustering is called `kmeans()`.
+
+First make up some data where we know what the answer should be: 
+
+```{r}
+#rnorm generates vector of normal distribution 30 values, centered around -3/3
+tmp <- c(rnorm(30,-3), rnorm(30,3))
+x <- cbind(x=tmp, y=rev(tmp))
+plot(x)
+
+```
+
+>Q. Can we use kmeans() to cluster this data setting k to 2 and nstart to 20?
+
+```{r}
+
+km <- kmeans(x, centers = 2, nstart =20)
+km
+```
+
+>Q. How many plots are in each cluster? 
+
+30, 30. We can use the function size to determine this information. 
+```{r}
+km$size
+
+```
+
+>Q. What 'component' of your result object details cluster assignment/membership? 
+
+```{r}
+km$cluster
+```
+
+>Q. What 'component' of your result object details cluster center? 
+
+```{r}
+km$centers
+```
+
+>Q. Plot x colored by the kmeans cluster assignment and add cluster centers as blue points. 
+
+```{r}
+plot(x, col=km$cluster)
+points(km$centers, col = "blue", pch = 15, cex =2)
+```
+
+# Hierarchical Clustering 
+
+A big limitation with k-means is that we have to tell it K (the number of clusters we want). 
+
+Analyze this same data with hclust()
+
+Demonstrate the use of dist(), hclust(), plot(), and cutree() functions to do clustering. Generate dendrograms and return cluster assignment/membership vector. 
+
+```{r}
+hc <- hclust(dist(x))
+hc
+```
+
+There is a plot method for hclust result objects. It plots a dendrogram. 
+
+```{r}
+plot(hc)
+```
+
+To get out cluster membership vector we have to do a little bit more work. We have to "cut" the tree where we think it makes sense. For this we use `cutree()` function. 
+
+```{r}
+cutree(hc, h= 6)
+```
+
+You can also call `cutree()` setting k to the numbers of groups/clusters you want.
+
+```{r}
+grps <- cutree(hc, k=2)
+```
+
+Make our results plot. 
+
+```{r}
+plot(x, col = grps)
+```
+
+# Principal Component Analysis of UK Food 
+## Understanding the data frame
+
+```{r}
+url <- "https://tinyurl.com/UK-foods"
+x <- read.csv(url, row.names = 1)
+
+```
+
+>**Q1. How many rows/columns are there in this new data frame?** 
+
+```{r}
+dim(x)
+```
+
+Using dim(), we can determine there are 17 rows and 5 columns. 
+
+**How would you preview the data frame.** 
+
+```{r}
+#have to comment out View(), since this is an interactive function for R and will cause an issue when knitting 
+#View(x)
+head(x)
+```
+
+We actually have 4 columns of interest (not 5), and 17 rows. 
+
+**Adjust the data with the new information.**
+
+```{r}
+#currently rownames is just the numbering
+#rownames(x)
+#set rownames to info in column 1 (actual row names)
+
+#rownames(x) <- x[,1]
+#x <- x[,-1]
+#head(x)
+#dim(x)
+```
+> **Q2.**
+
+This code is commented out since it is an unsafe way to make the changes we want to make. Every time this line of code runs, it will basically delete another column of x since we are directly setting x to x - 1 column. To avoid this, we can adjust the data when we read it in. 
+
+**Plot the data to better understand it.**
+
+```{r}
+barplot(as.matrix(x), beside=T, col=rainbow(nrow(x)))
+```
+
+> **Q3. Changing what optional argument in the above barplot() function results in the following plot?**
+
+By setting beside = FALSE, we can change the barplot. function barplot() has beside set to the default of FALSE, so we can also do this just by leaving the arugment beside out. 
+```{r}
+barplot(as.matrix(x), beside=F, col=rainbow(nrow(x)))
+```
+
+> **Q4. Missing in Handout**
+
+> **Q5. Generating all pairwise plots may help somewhat. Can you make sense of the following code and resulting figure? What does it mean if a given point lies on the diagonal for a given plot?**
+
+Yes. If a given point lies on the diagonal then it means it is similar to the rest of the dataset, if it is not on the diagonal it indicated variation (dissimilar to the existing trend). Even with this analysis, it is difficult to understand the data well/in a quantifiable way. 
+
+```{r}
+pairs(x, col=rainbow(10), pch=16)
+```
+
+> **Q6. What is the main differences between N. Ireland and the other countries of the UK in terms of this data-set?**
+
+When N. Ireland is compared in a piecewise plot, there is a lot of variation from the ideal diagonal line. This is because, N. Ireland's data is dissimilar to the data from all of the other countries. Comparatively, we can determine that N. Ireland is the most dissimilar overall. 
+
+## PCA to the rescue
+
+The main function in base R for PCA is `prcomp()`. This wants the transpose of our data. 
+
+```{r}
+#t() returns transpose of our data 
+t(x)
+pca <- prcomp(t(x))
+summary(pca)
+```
+
+> **Q7. Complete the code below to generate a plot of PC1 vs PC2. The second line adds text labels over the data points.**
+
+```{r}
+#pca$x[,1] -> pca1 
+plot(pca$x[,1], pca$x[,2], xlab="PC1", ylab="PC2", xlim=c(-270,500))
+text(pca$x[,1], pca$x[,2], colnames(x))
+```
+>**Q8. Customize your plot so that the colors of the country names match the colors in our UK and Ireland map and table at start of this document.**
+
+```{r}
+plot(pca$x[,1], pca$x[,2], xlab="PC1", ylab="PC2", xlim=c(-270,500))
+color <- c("orange", "red", "blue", "dark green" )
+text(pca$x[,1], pca$x[,2], colnames(x), col = color)
+```
+
+**Calculate how much variation in the original data each PC accounts for.**
+
+Almost 97% of the variance in the data is accounted for by just PC1 and PC2. In the notes, it is mentioned that in practice you only need to include enough principal components to account for at least 70% of the variance. 
+
+```{r}
+v <- round( pca$sdev^2/sum(pca$sdev^2) * 100 )
+v
+```
+
+This information can also be found through this method. 
+
+```{r}
+z <- summary(pca)
+z$importance
+```
+
+We can also plot this information.
+
+```{r}
+barplot(v, xlab="Principal Component", ylab="Percent Variation")
+```
+
+## Variable Loadings 
+
+We can also determine the influence of each of the original variables (17 rows) upon the principal components (loading scores) using $rotation.
+
+pca$rotation[,1] -> how much each variable contributes to pca1 (which accounts for most of the variation in data)
+
+```{r}
+par(mar=c(10, 3, 0.35, 0))
+barplot( pca$rotation[,1], las=2 )
+```
+
+Note: Largest positive loading scores push N.Ireland to the right. Largest negative loading scores push other countries to the left. 
+
+> **Q9: Generate a similar ‘loading plot’ for PC2. What two food groups feature predominantly and what does PC2 mainly tell us about?**
+
+```{r}
+par(mar=c(10, 3, 0.35, 0))
+barplot( pca$rotation[,2], las=2 )
+```
+The two food groups are fresh potatoes and soft drinks. Fresh potatoes are the highest positive loading score and soft drinks are the highest negative loading score. PC2 accounts for less variance in the data than PC1 (only about 29% compared to the 67%). You can see this graphically due to the barplot's more similar distribution across (loading scores are closer to 0). Additionally, we also know that fresh potatoes and soft drinks are the categories that contribute most to PC2 (fresh potatoes push N.Ireland to the right of the plot while soft drinks push the other countries to the left of the plot). 
+
+**We can also see this information with the biplot.**
+
+```{r}
+biplot(pca)
+```
+# PCA of RNA-Seq Data 
+
+**Load the data**
+
+```{r}
+url2 <- "https://tinyurl.com/expression-CSV"
+rna.data <- read.csv(url2, row.names=1)
+head(rna.data)
+```
+
+> **Q10: How many genes and samples are in this data set?**
+
+There are 100 genes and 10 samples. 
+
+```{r}
+dim(rna.data)
+```
+
+**PCA and plot**
+
+```{r}
+#transpose 
+pca <- prcomp(t(rna.data), scale=TRUE)
+ 
+#plot of pc1 and pc2
+plot(pca$x[,1], pca$x[,2], xlab="PC1", ylab="PC2")
+
+#how much variance does each pc account for 
+summary(pca)
+
+p <- round(pca$sdev^2/sum(pca$sdev^2)*100, 1)
+p
+```
+
+PC1 accounts for about 93% of variance and PC2 accounts for about 2% of variance. 
+
+**Create a barplot to represent proportion of variance accounted by each PC. We can do this using simply with plot(pca)**
+
+```{r}
+plot(pca, main="Quick scree plot")
+```
+
+**You can also manually plot this same graph using...**
+
+```{r}
+barplot(p, main="Scree Plot", 
+        names.arg = paste0("PC", 1:10),
+        xlab="Principal Component", ylab="Percent Variation")
+```
+
+**Let's update our main pca plot now**
+
+```{r}
+colvec <- colnames(rna.data)
+colvec[grep("wt", colvec)] <- "red"
+colvec[grep("ko", colvec)] <- "blue"
+
+plot(pca$x[,1], pca$x[,2], col=colvec, pch=16,
+     xlab=paste0("PC1 (", p[1], "%)"),
+     ylab=paste0("PC2 (", p[2], "%)"))
+
+text(pca$x[,1], pca$x[,2], labels = colnames(rna.data), pos=c(rep(4,5), rep(2,5)))
+```
+
+**Plot using ggplot**
+
+```{r}
+library(ggplot2)
+
+df <- as.data.frame(pca$x)
+df$samples <- colnames(rna.data) 
+df$condition <- substr(colnames(rna.data),1,2)
+
+p <- ggplot(df) + 
+        aes(PC1, PC2, label=samples, col=condition) + 
+        geom_label(show.legend = FALSE) + 
+        labs(title="PCA of RNASeq Data", subtitle = "PC1 clealy seperates wild-type from knock-out samples", x=paste0("PC1 (", p[1], "%)"), y=paste0("PC2 (", p[2], "%)"), caption="BIMM143 example data") +
+        theme_bw()
+  
+p
+
+```
+
+**Now let's determine the loading scores**
+
+```{r}
+loading_scores <- pca$rotation[,1]
+
+## sort for top 10
+gene_scores <- abs(loading_scores) 
+gene_score_ranked <- sort(gene_scores, decreasing=TRUE)
+
+## show ttop 10
+top_10_genes <- names(gene_score_ranked[1:10])
+top_10_genes 
+```
+

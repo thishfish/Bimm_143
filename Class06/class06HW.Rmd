@@ -1,0 +1,128 @@
+---
+title: "Class06HW"
+author: "Thisha Thiagarajan A15474979"
+date: "10/19/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+>**Section1** Improving Analysis Code by Writing Functions
+
+> **a** Improve the code below. 
+
+The function section1() simplifies the code. Now you can just call the function 
+of df$column and it will perform  x <- (x - min(x)) / (max(x) - min(x)). 
+
+```{r}
+df <- data.frame(a=1:10, b=seq(200,400,length=10),c=11:20,d=NA)
+
+df$a <- (df$a - min(df$a)) / (max(df$a) - min(df$a)) 
+df$b <- (df$b - min(df$a)) / (max(df$b) - min(df$b)) 
+df$c <- (df$c - min(df$c)) / (max(df$c) - min(df$c)) 
+df$d <- (df$d - min(df$d)) / (max(df$a) - min(df$d))
+
+df 
+
+section1 <- function(x){
+  x <- (x - min(x)) / (max(x) - min(x)) 
+}
+section1(df$a)
+section1(df$b)
+section1(df$c)
+section1(df$d)
+
+df
+```
+
+> **b** Improve the below example code for the analysis of protein drug interactions by abstracting the main activities in your own new function. 
+
+> Q1. 
+
+The read.pdb() function returns a dataframe object given input (PDB ID). 
+
+> Q2. 
+
+The trim.pdb() function selects a specific subset from the larger dataframe 
+returned by read.pdf(). 
+
+> Q3. 
+
+The input parameter sse controls the marginal black and gray rectangles in the 
+plots. Not including it would turn that feature off 
+(ex. plotb3(s1.b, typ="l", ylab="Bfactor")  ). 
+SSE represents secondary structure element and it basically annotates the 
+positions of major secondary structure elements in the margins of the plot. 
+
+> Q4. 
+
+A better plot to compare different proteins would be to plot all 3 connected 
+scatterplots on the same graph, making it easier to compare them to each other.
+It would also be beneficial if we were able to obtain a quantifiable value for 
+each of these scatterplots that allowed us to compare the proteins without 
+relying on our subjective graphical analysis. 
+
+> Q5. 
+
+The dendrogram plot allows us to compare all three proteins to each other and
+quantify the comparison,allowing us to see that protein 2 and protein 3 are more 
+similar to each other in their Bfactor trends. 
+
+
+
+```{r}
+# Can you improve this analysis code? 
+library(bio3d)
+s1 <- read.pdb("4AKE") # kinase with drug 
+s2 <- read.pdb("1AKE") # kinase no drug 
+s3 <- read.pdb("1E4Y") # kinase with drug
+
+s1.chainA <- trim.pdb(s1, chain="A", elety="CA") 
+s2.chainA <- trim.pdb(s2, chain="A", elety="CA") 
+s3.chainA <- trim.pdb(s3, chain="A", elety="CA")
+
+s1.b <- s1.chainA$atom$b 
+s2.b <- s2.chainA$atom$b 
+s3.b <- s3.chainA$atom$b
+
+plotb3(s1.b, sse=s1.chainA, typ="l", ylab="Bfactor") 
+plotb3(s2.b, sse=s2.chainA, typ="l", ylab="Bfactor") 
+plotb3(s3.b, sse=s3.chainA, typ="l", ylab="Bfactor")
+
+#Now create function to simplify
+
+#documentation: 
+#   input is the specification of file to be read (can be PDB ID)
+#   the function creates a plot given a PDB ID to assist in analysis of protein 
+#       drug interactions (compares residue to Bfactor)
+#   output is the plot itself 
+protein.drug <- function(x){ 
+  #read.pdb
+  s <- read.pdb(x)
+  #trim.pdb
+  s.chainA <- trim.pdb(s, chain="A", elety="CA")
+  #set s.b
+  s.b <- s.chainA$atom$b
+  #plot
+  plotb3(s.b, sse=s.chainA, typ="l", ylab="Bfactor")
+}
+
+protein.drug("4AKE")
+protein.drug("1AKE")
+protein.drug("1E4Y")
+
+#It works!
+
+#Q5. creating dendrogram plot
+
+hc <- hclust( dist( rbind(s1.b, s2.b, s3.b) ) )
+plot(hc)
+```
+
+
+```
+
