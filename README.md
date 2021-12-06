@@ -41,6 +41,6 @@ Class 16: RNA-Seq mini project
 
 Class 18: Thanksgiving
 
-Class 19: Genome informatics and high throughput sequencing 
+[Class 19: Genome informatics and high throughput sequencing](https://github.com/thishfish/Bimm_143/blob/main/class19/question13-14.pdf)
 
 Class 20: Portfolio building and discussion of bioinformatics in industry 
