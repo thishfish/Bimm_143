@@ -1,0 +1,55 @@
+---
+title: "class19"
+author: "Thisha Thiagarajan A15474979"
+date: "12/3/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+# Introduction to Genome Informatics Lab
+## Question 13/14
+
+```{r}
+expr <- read.table("rs8067378_ENSG00000172057.6.txt")
+head(expr)
+nrow(expr)
+
+```
+
+We have 462 samples. Found using nrow(). 
+
+```{r}
+table(expr$geno)
+```
+
+Using table(), I was able to determine sample size for each genotype. A/A = 108, A/G 233, G/G = 121. 
+
+Now, I am going to make a boxplot to visualize this data. 
+
+```{r}
+library(ggplot2)
+g <- ggplot(expr) + aes(x = geno, y = exp, fill = geno) + 
+  geom_boxplot() 
+
+g
+
+```
+
+Looking at this, you can tell that the median for A/A is around 32, the median for A/G is around 25, and the median for G/G is around 20. 
+
+```{r}
+library(dplyr)
+AA <- filter(expr, geno == "A/A")
+mean(AA$exp)
+median(AA$exp)
+
+AG <- filter(expr, geno == "A/G")
+mean(AG$exp)
+median(AG$exp)
+
+GG <- filter(expr, geno == "G/G")
+mean(GG$exp)
+median(GG$exp)
+
+```
+
